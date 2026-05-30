@@ -1,0 +1,45 @@
+{
+  "name": "agentic-supportdesk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,ui \"npm:dev:api\" \"npm:dev:ui\"",
+    "dev:api": "tsx watch src/server.ts",
+    "dev:ui": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:chrome": "PLAYWRIGHT_CHANNEL=chrome playwright test",
+    "check:boundaries": "node scripts/harness/check-boundaries.mjs",
+    "check:doc-links": "node scripts/harness/check-doc-links.mjs",
+    "harness:journeys": "node scripts/harness/run-user-journeys.mjs",
+    "harness:logs": "node scripts/harness/query-logs.mjs",
+    "harness:traces": "node scripts/harness/query-traces.mjs",
+    "harness:quality": "node scripts/harness/quality-score.mjs",
+    "ci": "npm run build && npm run test && npm run check:boundaries && npm run check:doc-links && npm run harness:quality"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
+    "express": "^5.2.1",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "tsx": "^4.21.0",
+    "vite": "^7.2.4",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^27.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
+  }
+}

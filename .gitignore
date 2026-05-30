@@ -1,0 +1,11 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+.vite/
+
+data/logs/*.jsonl
+data/traces/*.jsonl
+
+.DS_Store
+npm-debug.log*

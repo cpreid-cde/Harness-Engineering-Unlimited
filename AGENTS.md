@@ -27,6 +27,10 @@ This repository is a small harness-engineering demo. Treat this file as a map, n
 - Trace query: `npm run harness:traces -- --journey ticket-search --slow 250`
 - Quality score: `npm run harness:quality`
 
+## Jira
+
+- Use the HAR Kanban board for feature ideas: `https://theaicompanyorg.atlassian.net/jira/software/projects/HAR`.
+
 ## Working Rules
 
 - Keep domain flow in this order: `types -> schemas -> repo -> service -> routes -> ui`.

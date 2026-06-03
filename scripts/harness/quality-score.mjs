@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -38,9 +38,12 @@ const checks = [
     run: () => existsSync("scripts/harness/query-logs.mjs") && existsSync("scripts/harness/query-traces.mjs")
   },
   {
-    name: "browser journey present",
+    name: "browser journey captures Playwright screenshot proof",
     points: 10,
-    run: () => existsSync("tests/e2e/ticket-search.spec.ts") && existsSync("scripts/harness/run-user-journeys.mjs")
+    run: () =>
+      existsSync("tests/e2e/ticket-search.spec.ts") &&
+      existsSync("scripts/harness/run-user-journeys.mjs") &&
+      readFileSync("scripts/harness/run-user-journeys.mjs", "utf8").includes("page.screenshot")
   }
 ];
 

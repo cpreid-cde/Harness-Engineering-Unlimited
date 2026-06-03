@@ -6,7 +6,7 @@ The repository quality bar is deliberately executable. Humans decide the bar; sc
 
 | Area | Evidence | Weight |
 | --- | --- | --- |
-| Tests | `npm test`, `npm run test:e2e` | 30 |
+| Tests | `npm test`, `npm run test:e2e`, Playwright screenshot proof | 30 |
 | Architecture | `npm run check:boundaries` | 20 |
 | Observability | `data/logs`, `data/traces`, query scripts | 20 |
 | Accessibility | semantic labels, focus styles, empty states | 15 |
@@ -17,6 +17,7 @@ The repository quality bar is deliberately executable. Humans decide the bar; sc
 - The relevant unit or e2e test is updated.
 - `npm run check:boundaries` passes.
 - User-facing workflows have a visible empty, loading, or error state.
+- Browser-visible bug fixes made in Codex Desktop include Playwright `page.screenshot` artifacts inline as proof.
 - New runtime behavior emits enough logs or spans for Codex to query.
 - `docs/exec-plans` captures durable decisions when the work changes architecture, workflow, or demo flow.
 

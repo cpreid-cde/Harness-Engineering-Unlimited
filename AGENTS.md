@@ -33,4 +33,5 @@ This repository is a small harness-engineering demo. Treat this file as a map, n
 - UI code must not import `repo`, `service`, `routes`, or `providers`; use HTTP API helpers in `src/ui/lib`.
 - When a rule matters, encode it in `scripts/harness` with a remediation message.
 - If you fix a bug, capture before/after evidence through tests, logs, traces, or screenshots.
+- If you fix a browser-visible bug while working in Codex Desktop, ALWAYS include Playwright screenshots as proof in the final response. Use screenshots created by `page.screenshot`, such as the artifacts from `npm run harness:journeys`.
 - Update docs when a workflow or architecture rule changes.

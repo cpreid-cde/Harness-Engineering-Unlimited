@@ -1,9 +1,12 @@
 #!/usr/bin/env node
+import { mkdir } from "node:fs/promises";
+import { join } from "node:path";
 import { chromium } from "playwright";
 
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:5173";
 const stepTimeoutMs = Number.parseInt(process.env.JOURNEY_STEP_TIMEOUT_MS ?? "10000", 10);
 const launchOptions = process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {};
+const screenshotDir = process.env.HARNESS_SCREENSHOT_DIR ?? join(process.cwd(), "test-results", "harness-screenshots");
 
 function formatError(error) {
   return error instanceof Error ? error.message : String(error);
@@ -20,6 +23,13 @@ async function runStep(label, action) {
   } catch (error) {
     throw new Error(`${label} failed: ${formatError(error)}`);
   }
+}
+
+async function saveScreenshot(page, name) {
+  await mkdir(screenshotDir, { recursive: true });
+  const path = join(screenshotDir, name);
+  await page.screenshot({ path, fullPage: true });
+  console.log(`[journey] Playwright screenshot saved ${path}`);
 }
 
 async function main() {
@@ -55,11 +65,13 @@ async function main() {
     await runStep("Verify empty ticket search state", async () => {
       await page.getByLabel("Search tickets").fill("no-match-demo-query");
       await page.getByRole("heading", { name: "No tickets match this search" }).waitFor();
+      await saveScreenshot(page, "ticket-search-empty-state.png");
     });
 
     await runStep("Verify matching ticket search state", async () => {
       await page.getByLabel("Search tickets").fill("webhook");
       await page.getByRole("heading", { name: "Webhook retries delayed for enterprise workspace" }).waitFor();
+      await saveScreenshot(page, "ticket-search-matching-result.png");
     });
 
     await runStep("Verify ticket escalation", async () => {
@@ -68,6 +80,7 @@ async function main() {
       await page.getByLabel("Escalation note").fill("Journey verified customer impact and owner handoff.");
       await page.getByRole("button", { name: "Escalate ticket" }).click();
       await page.getByText("Escalated: Journey verified customer impact and owner handoff.").waitFor();
+      await saveScreenshot(page, "ticket-search-escalated-ticket.png");
     });
 
     console.log(`Journey passed against ${baseUrl}.`);

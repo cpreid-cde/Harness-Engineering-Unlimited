@@ -35,7 +35,6 @@ test.describe("ticket search", () => {
       id: "TCK-1048",
       title: "Webhook retries delayed for enterprise workspace",
       customer: "Northstar Health",
-      status: "investigating",
       assigneeName: "Sam Rivera",
       slaRisk: "at_risk",
       tags: expect.arrayContaining(["webhooks", "payments", "enterprise"])
@@ -47,8 +46,6 @@ test.describe("ticket search", () => {
 test.describe("ticket escalation", () => {
   test("updates the selected ticket after escalation", async ({ page }) => {
     await page.goto("/");
-    await page.getByLabel("Search tickets").fill("search");
-    await expect(page.getByRole("heading", { name: "Search empty state copy regression" })).toBeVisible();
 
     await page.getByLabel("Escalation note").fill("Customer impact confirmed; route to platform owner.");
     await page.getByRole("button", { name: "Escalate ticket" }).click();

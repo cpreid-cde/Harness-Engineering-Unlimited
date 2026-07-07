@@ -8,6 +8,7 @@ This repository is a small harness-engineering demo. Treat this file as a map, n
 | --- | --- |
 | Architecture boundaries | `docs/ARCHITECTURE.md` |
 | Definition of done | `docs/QUALITY.md` |
+| Maintainer approved guidelines | `docs/context/maintainer-approved-guidelines.md` |
 | Active and completed plans | `docs/exec-plans/` |
 | Feature workflow | `.codex/skills/add-product-feature/SKILL.md` |
 | UI bug workflow | `.codex/skills/reproduce-ui-bug/SKILL.md` |

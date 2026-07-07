@@ -147,6 +147,60 @@ textarea:focus-visible {
   background: var(--color-bg);
 }
 
+.saved-filter-form {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.saved-filter-form button,
+.saved-filter-list button {
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+  padding: var(--space-3);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.saved-filter-form button:disabled {
+  border-color: var(--color-border);
+  background: var(--color-surface-strong);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
+.saved-filter-list {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.saved-filter-list p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.saved-filter-list button {
+  background: var(--color-bg);
+  color: var(--color-text);
+  text-align: left;
+}
+
+.saved-filter-list button:hover {
+  background: var(--color-surface);
+}
+
+.saved-filter-list span,
+.saved-filter-list small {
+  display: block;
+}
+
+.saved-filter-list small {
+  color: var(--color-muted);
+  margin-top: var(--space-1);
+}
+
 .ticket-list {
   display: grid;
 }

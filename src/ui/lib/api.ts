@@ -1,4 +1,4 @@
-import type { Assignee, TicketSearchResult, TicketWithSignals } from "../../types/ticket";
+import type { Assignee, SavedTicketFilter, TicketSearchResult, TicketWithSignals } from "../../types/ticket";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -23,6 +23,23 @@ export function fetchTickets(query: string) {
 
 export function fetchAssignees() {
   return request<{ assignees: Assignee[] }>("/api/assignees");
+}
+
+export function fetchSavedTicketFilters() {
+  return request<{ filters: SavedTicketFilter[] }>("/api/ticket-filters");
+}
+
+export function createSavedTicketFilter(name: string, query: string) {
+  return request<SavedTicketFilter>("/api/ticket-filters", {
+    method: "POST",
+    body: JSON.stringify({ name, q: query })
+  });
+}
+
+export function restoreSavedTicketFilter(id: string) {
+  return request<SavedTicketFilter>(`/api/ticket-filters/${id}/restore`, {
+    method: "POST"
+  });
 }
 
 export function escalateTicket(id: string, note: string) {

@@ -1,6 +1,7 @@
+import { randomUUID } from "node:crypto";
 import type { TicketRepository } from "../repo/ticketRepo";
-import type { Assignee, SlaRisk, Ticket, TicketSearchResult, TicketWithSignals } from "../types/ticket";
-import type { EscalationInput, TicketSearchQuery } from "../schemas/ticketSchema";
+import type { Assignee, SavedTicketFilter, SlaRisk, Ticket, TicketSearchResult, TicketWithSignals } from "../types/ticket";
+import type { EscalationInput, SavedTicketFilterInput, TicketSearchQuery } from "../schemas/ticketSchema";
 
 export function calculateSlaRisk(ticket: Pick<Ticket, "dueAt" | "priority" | "sentiment">, now = new Date()): SlaRisk {
   const minutesUntilDue = Math.round((new Date(ticket.dueAt).getTime() - now.getTime()) / 60_000);
@@ -33,6 +34,9 @@ export type TicketService = {
   searchTickets(query: TicketSearchQuery): TicketSearchResult;
   getTicket(id: string): TicketWithSignals | undefined;
   listAssignees(): Assignee[];
+  listSavedTicketFilters(): SavedTicketFilter[];
+  getSavedTicketFilter(id: string): SavedTicketFilter | undefined;
+  createSavedTicketFilter(input: SavedTicketFilterInput): SavedTicketFilter;
   escalateTicket(id: string, input: EscalationInput): TicketWithSignals | undefined;
 };
 
@@ -57,6 +61,27 @@ export function createTicketService(repo: TicketRepository): TicketService {
 
     listAssignees() {
       return repo.listAssignees();
+    },
+
+    listSavedTicketFilters() {
+      return repo.listSavedTicketFilters();
+    },
+
+    getSavedTicketFilter(id) {
+      return repo.getSavedTicketFilter(id);
+    },
+
+    createSavedTicketFilter(input) {
+      const now = new Date().toISOString();
+      return repo.createSavedTicketFilter({
+        id: randomUUID(),
+        name: input.name,
+        query: input.q ?? "",
+        status: input.status,
+        assigneeId: input.assigneeId,
+        createdAt: now,
+        updatedAt: now
+      });
     },
 
     escalateTicket(id, input) {

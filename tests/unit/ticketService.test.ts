@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { calculateSlaRisk } from "../../src/service/ticketService";
+import { createTicketRepository } from "../../src/repo/ticketRepo";
+import { calculateSlaRisk, createTicketService } from "../../src/service/ticketService";
 
 const now = new Date("2026-05-27T12:00:00.000Z");
 
@@ -54,5 +55,25 @@ describe("calculateSlaRisk", () => {
         now
       )
     ).toBe("healthy");
+  });
+});
+
+describe("saved ticket filters", () => {
+  it("creates and lists saved ticket filters with query state", () => {
+    const service = createTicketService(createTicketRepository());
+
+    const saved = service.createSavedTicketFilter({ name: "Webhook queue", q: "webhook" });
+
+    expect(saved).toMatchObject({ name: "Webhook queue", query: "webhook" });
+    expect(saved.id).toEqual(expect.any(String));
+    expect(service.listSavedTicketFilters()).toEqual([saved]);
+  });
+
+  it("returns a saved filter by id for restore", () => {
+    const service = createTicketService(createTicketRepository());
+    const saved = service.createSavedTicketFilter({ name: "Full queue", q: "" });
+
+    expect(service.getSavedTicketFilter(saved.id)).toEqual(saved);
+    expect(service.getSavedTicketFilter("missing")).toBeUndefined();
   });
 });

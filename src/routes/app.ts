@@ -34,6 +34,29 @@ export function createApp() {
     res.json(result);
   });
 
+  app.get("/api/tickets/export.csv", (req, res) => {
+    const parsed = ticketSearchQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten() });
+      return;
+    }
+
+    const result = service.exportTicketsCsv(parsed.data);
+    logEvent({
+      timestamp: new Date().toISOString(),
+      level: "info",
+      event: "ticket.export",
+      route: "/api/tickets/export.csv",
+      journey: typeof req.query.journey === "string" ? req.query.journey : undefined,
+      message: `Ticket export returned ${result.total} rows`,
+      fields: { query: result.query, total: result.total }
+    });
+    res
+      .type("text/csv")
+      .attachment("ticket-search-results.csv")
+      .send(result.csv);
+  });
+
   app.get("/api/tickets/:id", (req, res) => {
     const ticket = service.getTicket(req.params.id);
     if (!ticket) {

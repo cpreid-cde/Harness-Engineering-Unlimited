@@ -21,6 +21,18 @@ export function fetchTickets(query: string) {
   return request<TicketSearchResult>(`/api/tickets?${params}`);
 }
 
+export async function exportTicketsCsv(query: string) {
+  const params = new URLSearchParams({ journey: "ticket-search" });
+  if (query.trim()) {
+    params.set("q", query.trim());
+  }
+  const response = await fetch(`/api/tickets/export.csv?${params}`);
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+  return response.blob();
+}
+
 export function fetchAssignees() {
   return request<{ assignees: Assignee[] }>("/api/assignees");
 }

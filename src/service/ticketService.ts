@@ -31,10 +31,27 @@ function withSignals(ticket: Ticket, assignee: Assignee | undefined, now = new D
 
 export type TicketService = {
   searchTickets(query: TicketSearchQuery): TicketSearchResult;
+  exportTicketsCsv(query: TicketSearchQuery): { csv: string; total: number; query: string };
   getTicket(id: string): TicketWithSignals | undefined;
   listAssignees(): Assignee[];
   escalateTicket(id: string, input: EscalationInput): TicketWithSignals | undefined;
 };
+
+function escapeCsvValue(value: string | number) {
+  const text = String(value);
+  if (/[",\n\r]/.test(text)) {
+    return `"${text.replaceAll("\"", "\"\"")}"`;
+  }
+  return text;
+}
+
+export function ticketsToCsv(tickets: TicketWithSignals[]) {
+  const rows = [["ticket id", "title", "customer", "status", "priority", "owner"]];
+  for (const ticket of tickets) {
+    rows.push([ticket.id, ticket.title, ticket.customer, ticket.status, ticket.priority, ticket.assigneeName]);
+  }
+  return `${rows.map((row) => row.map(escapeCsvValue).join(",")).join("\n")}\n`;
+}
 
 export function createTicketService(repo: TicketRepository): TicketService {
   return {
@@ -47,6 +64,16 @@ export function createTicketService(repo: TicketRepository): TicketService {
         tickets,
         total: tickets.length,
         query: query.q ?? ""
+      };
+    },
+
+    exportTicketsCsv(query) {
+      const result = this.searchTickets(query);
+
+      return {
+        csv: ticketsToCsv(result.tickets),
+        total: result.total,
+        query: result.query
       };
     },
 

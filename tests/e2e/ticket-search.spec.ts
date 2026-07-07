@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { APIRequestContext } from "@playwright/test";
 
 type TicketSearchApiResponse = {
   query: string;
@@ -15,8 +16,19 @@ type TicketSearchApiResponse = {
   }>;
 };
 
+async function waitForApi(request: APIRequestContext) {
+  await expect
+    .poll(async () => {
+      const response = await request.get("/api/health");
+      return response.status();
+    })
+    .toBe(200);
+}
+
 test.describe("ticket search", () => {
   test("returns matching ticket results from the API", async ({ request }) => {
+    await waitForApi(request);
+
     const response = await request.get("/api/tickets", {
       params: {
         journey: "ticket-search",
@@ -40,6 +52,27 @@ test.describe("ticket search", () => {
       tags: expect.arrayContaining(["webhooks", "payments", "enterprise"])
     });
     expect(result.tickets[0].minutesUntilDue).toEqual(expect.any(Number));
+  });
+
+  test("exports active search results to CSV", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByLabel("Search tickets").fill("webhook");
+    await expect(page.getByRole("button", { name: /TCK-1048/ })).toBeVisible();
+
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export CSV" }).click();
+    const download = await downloadPromise;
+    const csv = await download.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const chunk of csv) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+
+    expect(download.suggestedFilename()).toBe("ticket-search-results.csv");
+    expect(Buffer.concat(chunks).toString("utf8")).toContain(
+      "TCK-1048,Webhook retries delayed for enterprise workspace,Northstar Health,investigating,urgent,Sam Rivera"
+    );
   });
 });
 

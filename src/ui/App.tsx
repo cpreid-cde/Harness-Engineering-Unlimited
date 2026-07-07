@@ -1,13 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Assignee, TicketWithSignals } from "../types/ticket";
+import type { Assignee, TicketStatus, TicketWithSignals } from "../types/ticket";
 import { AssigneeQueue } from "./components/AssigneeQueue";
 import { ObservabilityStrip } from "./components/ObservabilityStrip";
 import { TicketDetail } from "./components/TicketDetail";
 import { TicketList } from "./components/TicketList";
 import { escalateTicket, fetchAssignees, fetchTickets } from "./lib/api";
 
+const statusOptions: Array<{ value: TicketStatus; label: string }> = [
+  { value: "open", label: "Open" },
+  { value: "investigating", label: "Investigating" },
+  { value: "waiting_on_customer", label: "Waiting on customer" },
+  { value: "escalated", label: "Escalated" },
+  { value: "resolved", label: "Resolved" }
+];
+
 export function App() {
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | "">("");
   const [tickets, setTickets] = useState<TicketWithSignals[]>([]);
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [selectedId, setSelectedId] = useState<string>();
@@ -18,7 +27,7 @@ export function App() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchTickets(query)
+    fetchTickets(query, statusFilter || undefined)
       .then((result) => {
         if (cancelled) {
           return;
@@ -41,7 +50,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [query]);
+  }, [query, statusFilter]);
 
   useEffect(() => {
     fetchAssignees()
@@ -85,6 +94,19 @@ export function App() {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Customer, title, or tag"
             />
+            <label htmlFor="ticket-status-filter">Status filter</label>
+            <select
+              id="ticket-status-filter"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as TicketStatus | "")}
+            >
+              <option value="">All statuses</option>
+              {statusOptions.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
+            </select>
           </div>
           {loading ? <p className="notice">Loading queue...</p> : null}
           {error ? <p className="notice notice--error">{error}</p> : null}
@@ -93,6 +115,7 @@ export function App() {
               tickets={tickets}
               selectedId={selectedTicket?.id}
               query={query}
+              status={statusFilter || undefined}
               onSelect={(ticket) => setSelectedId(ticket.id)}
             />
           ) : null}

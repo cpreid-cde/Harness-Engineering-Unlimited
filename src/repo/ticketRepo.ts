@@ -1,7 +1,8 @@
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
-import type { Assignee, Ticket, TicketStatus } from "../types/ticket";
+import type { Assignee, SavedTicketFilter, Ticket, TicketStatus } from "../types/ticket";
 
 type TicketRow = Omit<Ticket, "tags"> & { tags: string };
+type SavedTicketFilterRow = SavedTicketFilter & { status: TicketStatus | null; assigneeId: string | null };
 
 export type TicketRepository = {
   listTickets(filters: { query?: string; status?: TicketStatus; assigneeId?: string }): Ticket[];
@@ -9,6 +10,9 @@ export type TicketRepository = {
   updateTicket(ticket: Ticket): Ticket;
   listAssignees(): Assignee[];
   getAssignee(id: string): Assignee | undefined;
+  listSavedTicketFilters(): SavedTicketFilter[];
+  getSavedTicketFilter(id: string): SavedTicketFilter | undefined;
+  createSavedTicketFilter(filter: SavedTicketFilter): SavedTicketFilter;
 };
 
 function isoMinutesFromNow(minutes: number) {
@@ -19,6 +23,14 @@ function mapTicket(row: TicketRow): Ticket {
   return {
     ...row,
     tags: JSON.parse(row.tags) as string[]
+  };
+}
+
+function mapSavedTicketFilter(row: SavedTicketFilterRow): SavedTicketFilter {
+  return {
+    ...row,
+    status: row.status ?? undefined,
+    assigneeId: row.assigneeId ?? undefined
   };
 }
 
@@ -48,6 +60,16 @@ export function createTicketRepository(): TicketRepository {
       tags TEXT NOT NULL,
       escalationNote TEXT,
       FOREIGN KEY (assigneeId) REFERENCES assignees(id)
+    );
+
+    CREATE TABLE saved_ticket_filters (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      query TEXT NOT NULL,
+      status TEXT,
+      assigneeId TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
     );
   `);
 
@@ -207,6 +229,36 @@ export function createTicketRepository(): TicketRepository {
 
     getAssignee(id) {
       return db.prepare("SELECT * FROM assignees WHERE id = ?").get(id) as Assignee | undefined;
+    },
+
+    listSavedTicketFilters() {
+      return db
+        .prepare("SELECT * FROM saved_ticket_filters ORDER BY updatedAt DESC, name ASC")
+        .all()
+        .map((row) => mapSavedTicketFilter(row as SavedTicketFilterRow));
+    },
+
+    getSavedTicketFilter(id) {
+      const row = db.prepare("SELECT * FROM saved_ticket_filters WHERE id = ?").get(id) as
+        | SavedTicketFilterRow
+        | undefined;
+      return row ? mapSavedTicketFilter(row) : undefined;
+    },
+
+    createSavedTicketFilter(filter) {
+      db.prepare(`
+        INSERT INTO saved_ticket_filters (id, name, query, status, assigneeId, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        filter.id,
+        filter.name,
+        filter.query,
+        filter.status ?? null,
+        filter.assigneeId ?? null,
+        filter.createdAt,
+        filter.updatedAt
+      );
+      return filter;
     }
   };
 }

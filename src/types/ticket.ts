@@ -40,3 +40,13 @@ export type TicketSearchResult = {
   total: number;
   query: string;
 };
+
+export type SavedTicketFilter = {
+  id: string;
+  name: string;
+  query: string;
+  status?: TicketStatus;
+  assigneeId?: string;
+  createdAt: string;
+  updatedAt: string;
+};

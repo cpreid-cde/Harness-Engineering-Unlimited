@@ -1,5 +1,5 @@
 import express from "express";
-import { escalationSchema, ticketSearchQuerySchema } from "../schemas/ticketSchema";
+import { escalationSchema, savedTicketFilterSchema, ticketSearchQuerySchema } from "../schemas/ticketSchema";
 import { createDefaultTicketService } from "../service/defaultTicketService";
 import { logEvent, observabilityMiddleware } from "../providers/observability";
 
@@ -41,6 +41,47 @@ export function createApp() {
       return;
     }
     res.json(ticket);
+  });
+
+  app.get("/api/ticket-filters", (_req, res) => {
+    res.json({ filters: service.listSavedTicketFilters() });
+  });
+
+  app.post("/api/ticket-filters", (req, res) => {
+    const parsed = savedTicketFilterSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten() });
+      return;
+    }
+
+    const filter = service.createSavedTicketFilter(parsed.data);
+    logEvent({
+      timestamp: new Date().toISOString(),
+      level: "info",
+      event: "ticket.filter.saved",
+      route: "/api/ticket-filters",
+      message: `Saved ticket filter ${filter.name}`,
+      fields: { filterId: filter.id, query: filter.query, status: filter.status }
+    });
+    res.status(201).json(filter);
+  });
+
+  app.post("/api/ticket-filters/:id/restore", (req, res) => {
+    const filter = service.getSavedTicketFilter(req.params.id);
+    if (!filter) {
+      res.status(404).json({ error: "Saved filter not found" });
+      return;
+    }
+
+    logEvent({
+      timestamp: new Date().toISOString(),
+      level: "info",
+      event: "ticket.filter.restored",
+      route: "/api/ticket-filters/:id/restore",
+      message: `Restored ticket filter ${filter.name}`,
+      fields: { filterId: filter.id, query: filter.query, status: filter.status }
+    });
+    res.json(filter);
   });
 
   app.post("/api/tickets/:id/escalate", (req, res) => {

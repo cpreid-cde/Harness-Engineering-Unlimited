@@ -11,9 +11,14 @@ export const ticketSearchQuerySchema = z.object({
   assigneeId: z.string().optional()
 });
 
+export const savedTicketFilterSchema = ticketSearchQuerySchema.extend({
+  name: z.string().trim().min(1, "Saved filter name is required.").max(48, "Saved filter name must be concise.")
+});
+
 export const escalationSchema = z.object({
   note: z.string().trim().min(8, "Escalation note must explain the customer impact.")
 });
 
 export type TicketSearchQuery = z.infer<typeof ticketSearchQuerySchema>;
+export type SavedTicketFilterInput = z.infer<typeof savedTicketFilterSchema>;
 export type EscalationInput = z.infer<typeof escalationSchema>;

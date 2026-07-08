@@ -29,7 +29,7 @@ export function createApp() {
       route: "/api/tickets",
       journey: typeof req.query.journey === "string" ? req.query.journey : undefined,
       message: `Ticket search returned ${result.total} results`,
-      fields: { query: result.query, total: result.total }
+      fields: { query: result.query, status: result.status, total: result.total }
     });
     res.json(result);
   });

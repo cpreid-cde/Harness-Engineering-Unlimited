@@ -41,6 +41,20 @@ test.describe("ticket search", () => {
     });
     expect(result.tickets[0].minutesUntilDue).toEqual(expect.any(Number));
   });
+
+  test("filters the visible queue by status and clears the filter", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByLabel("Status filter").selectOption("open");
+
+    await expect(page.getByRole("button", { name: /TCK-1049/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /TCK-1051/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /TCK-1048/ })).toBeHidden();
+
+    await page.getByLabel("Status filter").selectOption("");
+
+    await expect(page.getByRole("button", { name: /TCK-1048/ })).toBeVisible();
+  });
 });
 
 test.describe("ticket escalation", () => {
@@ -51,6 +65,6 @@ test.describe("ticket escalation", () => {
     await page.getByRole("button", { name: "Escalate ticket" }).click();
 
     await expect(page.getByText("Escalated: Customer impact confirmed; route to platform owner.")).toBeVisible();
-    await expect(page.getByText("escalated").first()).toBeVisible();
+    await expect(page.getByLabel("Ticket detail").locator("dd").filter({ hasText: "escalated" })).toBeVisible();
   });
 });

@@ -46,7 +46,8 @@ export function createTicketService(repo: TicketRepository): TicketService {
       return {
         tickets,
         total: tickets.length,
-        query: query.q ?? ""
+        query: query.q ?? "",
+        status: query.status
       };
     },
 

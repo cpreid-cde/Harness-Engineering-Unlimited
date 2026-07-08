@@ -1,4 +1,4 @@
-import type { Assignee, TicketSearchResult, TicketWithSignals } from "../../types/ticket";
+import type { Assignee, TicketSearchResult, TicketStatus, TicketWithSignals } from "../../types/ticket";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -13,10 +13,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function fetchTickets(query: string) {
+export function fetchTickets(query: string, status?: TicketStatus) {
   const params = new URLSearchParams({ journey: "ticket-search" });
   if (query.trim()) {
     params.set("q", query.trim());
+  }
+  if (status) {
+    params.set("status", status);
   }
   return request<TicketSearchResult>(`/api/tickets?${params}`);
 }

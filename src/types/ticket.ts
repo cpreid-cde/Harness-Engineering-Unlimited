@@ -39,4 +39,5 @@ export type TicketSearchResult = {
   tickets: TicketWithSignals[];
   total: number;
   query: string;
+  status?: TicketStatus;
 };

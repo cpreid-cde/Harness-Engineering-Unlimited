@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { calculateSlaRisk } from "../../src/service/ticketService";
+import { createTicketRepository } from "../../src/repo/ticketRepo";
+import { calculateSlaRisk, createTicketService } from "../../src/service/ticketService";
+import type { TicketStatus } from "../../src/types/ticket";
 
 const now = new Date("2026-05-27T12:00:00.000Z");
 
@@ -54,5 +56,31 @@ describe("calculateSlaRisk", () => {
         now
       )
     ).toBe("healthy");
+  });
+});
+
+describe("searchTickets", () => {
+  it.each([
+    ["open", ["TCK-1049", "TCK-1051"]],
+    ["investigating", ["TCK-1048"]],
+    ["waiting_on_customer", ["TCK-1050"]],
+    ["escalated", []],
+    ["resolved", []]
+  ] satisfies Array<[TicketStatus, string[]]>)("filters tickets by %s status", (status, expectedIds) => {
+    const service = createTicketService(createTicketRepository());
+
+    const result = service.searchTickets({ q: "", status });
+
+    expect(result.status).toBe(status);
+    expect(result.tickets.map((ticket) => ticket.id)).toEqual(expectedIds);
+  });
+
+  it("returns the full queue when the status filter is cleared", () => {
+    const service = createTicketService(createTicketRepository());
+
+    const result = service.searchTickets({ q: "" });
+
+    expect(result.status).toBeUndefined();
+    expect(result.total).toBe(4);
   });
 });

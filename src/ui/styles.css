@@ -147,6 +147,24 @@ textarea:focus-visible {
   background: var(--color-bg);
 }
 
+.export-button {
+  width: 100%;
+  margin-top: var(--space-3);
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+  padding: var(--space-3);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.export-button:disabled {
+  border-color: var(--color-border);
+  background: var(--color-surface-strong);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
 .ticket-list {
   display: grid;
 }

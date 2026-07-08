@@ -4,7 +4,7 @@ import { AssigneeQueue } from "./components/AssigneeQueue";
 import { ObservabilityStrip } from "./components/ObservabilityStrip";
 import { TicketDetail } from "./components/TicketDetail";
 import { TicketList } from "./components/TicketList";
-import { escalateTicket, fetchAssignees, fetchTickets } from "./lib/api";
+import { escalateTicket, exportTicketsCsv, fetchAssignees, fetchTickets } from "./lib/api";
 
 export function App() {
   const [query, setQuery] = useState("");
@@ -13,6 +13,7 @@ export function App() {
   const [selectedId, setSelectedId] = useState<string>();
   const [escalationNote, setEscalationNote] = useState("");
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string>();
 
   useEffect(() => {
@@ -63,6 +64,26 @@ export function App() {
     setEscalationNote("");
   }
 
+  async function handleExportCsv() {
+    setExporting(true);
+    try {
+      const csv = await exportTicketsCsv(query);
+      const url = URL.createObjectURL(csv);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "ticket-search-results.csv";
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setError(undefined);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -85,6 +106,9 @@ export function App() {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Customer, title, or tag"
             />
+            <button className="export-button" type="button" onClick={handleExportCsv} disabled={loading || exporting}>
+              {exporting ? "Exporting CSV..." : "Export CSV"}
+            </button>
           </div>
           {loading ? <p className="notice">Loading queue...</p> : null}
           {error ? <p className="notice notice--error">{error}</p> : null}
